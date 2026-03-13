@@ -1,0 +1,302 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String   @default("")
+  passwordHash  String
+  baseCurrency  String   @default("USD")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  incomeEntries         IncomeEntry[]
+  moneyPlans            MoneyPlan[]
+  moneyAllocations      MoneyAllocation[]
+  debts                 Debt[]
+  debtPayments          DebtPayment[]
+  receivables           Receivable[]
+  billEntries           BillEntry[]
+  savingsEntries        SavingsEntry[]
+  investments           Investment[]
+  assets                Asset[]
+  lifestyleEntries      LifestyleEntry[]
+  softwareSubscriptions SoftwareSubscription[]
+  exchangeRates         ExchangeRate[]
+
+  @@map("users")
+}
+
+model IncomeEntry {
+  id                 String   @id @default(cuid())
+  userId             String
+  dateReceived       DateTime
+  month              String
+  sourceName         String
+  incomeType         String
+  businessCategory   String?
+  description        String?
+  currency           String   @default("USD")
+  amount             Float
+  paymentStage       String?
+  linkedReceivableId String?
+  notes              String?
+  createdAt          DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  receivable Receivable? @relation(fields: [linkedReceivableId], references: [id])
+
+  @@map("income_entries")
+}
+
+model MoneyPlan {
+  id                String   @id @default(cuid())
+  userId            String
+  planName          String
+  isActive          Boolean  @default(false)
+  tithePercent      Float    @default(10)
+  billsPercent      Float    @default(50)
+  savingsPercent    Float    @default(10)
+  debtPercent       Float    @default(15)
+  investmentPercent Float    @default(5)
+  assetsPercent     Float    @default(5)
+  lifestylePercent  Float    @default(5)
+  createdAt         DateTime @default(now())
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moneyAllocations MoneyAllocation[]
+
+  @@map("money_plans")
+}
+
+model MoneyAllocation {
+  id               String   @id @default(cuid())
+  userId           String
+  month            String
+  totalIncome      Float
+  titheAmount      Float
+  billsAmount      Float
+  savingsAmount    Float
+  debtAmount       Float
+  investmentAmount Float
+  assetsAmount     Float
+  lifestyleAmount  Float
+  planId           String
+  createdAt        DateTime @default(now())
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan MoneyPlan @relation(fields: [planId], references: [id])
+
+  @@unique([userId, month])
+  @@map("money_allocations")
+}
+
+model Debt {
+  id               String    @id @default(cuid())
+  userId           String
+  creditorName     String
+  originalAmount   Float
+  currency         String    @default("USD")
+  startDate        DateTime
+  dueDate          DateTime?
+  priorityLevel    String    @default("medium")
+  status           String    @default("active")
+  amountPaid       Float     @default(0)
+  remainingBalance Float
+  notes            String?
+  createdAt        DateTime  @default(now())
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments DebtPayment[]
+
+  @@map("debts")
+}
+
+model DebtPayment {
+  id          String   @id @default(cuid())
+  debtId      String
+  userId      String
+  date        DateTime
+  currency    String   @default("USD")
+  amountPaid  Float
+  paymentType String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  debt Debt @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("debt_payments")
+}
+
+model Receivable {
+  id                 String    @id @default(cuid())
+  userId             String
+  clientName         String
+  projectName        String
+  totalContractValue Float
+  currency           String    @default("USD")
+  paymentStage       String?
+  amountDue          Float
+  expectedDate       DateTime?
+  amountReceived     Float     @default(0)
+  status             String    @default("pending")
+  notes              String?
+  createdAt          DateTime  @default(now())
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments      ReceivablePayment[]
+  incomeEntries IncomeEntry[]
+
+  @@map("receivables")
+}
+
+model ReceivablePayment {
+  id           String   @id @default(cuid())
+  receivableId String
+  date         DateTime
+  currency     String   @default("USD")
+  amount       Float
+  paymentType  String?
+  createdAt    DateTime @default(now())
+
+  receivable Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+
+  @@map("receivable_payments")
+}
+
+model BillEntry {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime
+  month           String
+  category        String
+  description     String
+  currency        String   @default("USD")
+  allocatedAmount Float    @default(0)
+  actualSpent     Float    @default(0)
+  balance         Float    @default(0)
+  paidFrom        String?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bill_entries")
+}
+
+model SavingsEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  month       String
+  savingsType String
+  currency    String   @default("USD")
+  amount      Float
+  actionType  String   @default("deposit")
+  purpose     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("savings_entries")
+}
+
+model Investment {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime
+  month          String
+  investmentType String
+  symbol         String?
+  platform       String?
+  currency       String   @default("USD")
+  amount         Float
+  holdingType    String?
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("investments")
+}
+
+model Asset {
+  id             String   @id @default(cuid())
+  userId         String
+  dateAcquired   DateTime
+  month          String
+  assetType      String
+  description    String
+  currency       String   @default("USD")
+  purchaseCost   Float
+  estimatedValue Float
+  location       String?
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("assets")
+}
+
+model LifestyleEntry {
+  id            String   @id @default(cuid())
+  userId        String
+  date          DateTime
+  month         String
+  lifestyleType String
+  description   String
+  currency      String   @default("USD")
+  amount        Float
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("lifestyle_entries")
+}
+
+model SoftwareSubscription {
+  id                    String    @id @default(cuid())
+  userId                String
+  softwareName          String
+  category              String
+  planName              String?
+  billingCycle          String
+  cost                  Float
+  currency              String    @default("USD")
+  startDate             DateTime?
+  lastPaidDate          DateTime?
+  nextDueDate           DateTime?
+  autoCalculatedNextDue Boolean   @default(true)
+  status                String    @default("active")
+  paymentMethod         String?
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("software_subscriptions")
+}
+
+model ExchangeRate {
+  id           String   @id @default(cuid())
+  userId       String
+  fromCurrency String
+  toCurrency   String
+  rate         Float
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fromCurrency, toCurrency])
+  @@map("exchange_rates")
+}
