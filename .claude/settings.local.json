@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --yes)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --yes --name money-os)",
+      "Bash(PACKAGE_NAME=money-os npx --yes create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
+      "Bash(mkdir -p \"/Users/korsgytechnologies/Documents/Money System/money-os\")",
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(grep -r \"from ''@/lib/calculations''\" \"/Users/korsgytechnologies/Documents/Money System/money-os/src/\" --include=\"*.ts\" --include=\"*.tsx\" -l)",
+      "Bash(grep -n \"from ''@/lib/calculations''\" \"/Users/korsgytechnologies/Documents/Money System/money-os/src/app/\\(dashboard\\)/software/page.tsx\")",
+      "Bash(sed -i '' \"s|import { getNextDueDate } from ''@/lib/calculations''|import { getNextDueDate } from ''@/lib/utils''|g\" \"/Users/korsgytechnologies/Documents/Money System/money-os/src/app/api/software/route.ts\" \"/Users/korsgytechnologies/Documents/Money System/money-os/src/app/api/software/[id]/route.ts\")",
+      "Bash(sed -i '' \"s|import { getMonthlyEquivalent } from ''@/lib/calculations''|import { getMonthlyEquivalent } from ''@/lib/utils''|g\" \"/Users/korsgytechnologies/Documents/Money System/money-os/src/app/api/dashboard/route.ts\" \"/Users/korsgytechnologies/Documents/Money System/money-os/src/app/api/summary/route.ts\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in d[''''dependencies''''].items\\(\\)}, indent=2\\)\\)\")",
+      "Bash(npm uninstall:*)"
+    ]
+  }
+}
